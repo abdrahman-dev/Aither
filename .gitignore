@@ -26,5 +26,5 @@ Thumbs.db
 coverage/
 
 # Vendored third-party reference — nested git repo with its own history; kept
-# local, not version-controlled here (see docs/project/Aither_Development_Phase_0_2.md)
+# local, not version-controlled here (see docs/project/Aither_Development_Phase_0_5.md)
 docs/reference/temperature-api-quickstart/

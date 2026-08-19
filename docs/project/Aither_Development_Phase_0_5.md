@@ -1,4 +1,4 @@
-# Aither — Development Phase 0.2: Documentation Finalization
+# Aither — Development Phase 0.5: Documentation Finalization
 
 > **Status:** Complete
 > **Date:** 2026-08-19
@@ -103,7 +103,7 @@ begins next.**
 
 ---
 
-## 6. Phase 0.2 Checklist
+## 6. Phase 0.5 Checklist
 
 - [x] Full compatibility audit against the official FortyGuard reference performed
 - [x] Response envelope corrected (no body-level `status_code`)
