@@ -189,6 +189,25 @@ If a type can be reused, do not duplicate it.
 
 ---
 
+## 6.1 Verification Scope
+
+After implementing a feature or scaffold, verification is limited to:
+
+- (a) the code compiles/builds successfully (`tsc`, `vite build`, or the project's existing build script),
+- (b) the linter passes if one is configured, and
+- (c) a brief static read-through of the changed files to confirm they match the task.
+
+Non-negotiable:
+
+- Do NOT spawn background dev servers (`npm run dev`, `vite`, `node server.js`, etc.) to "verify it serves."
+- Do NOT launch headless browsers (Edge, Chrome, Playwright, Puppeteer, or any browser automation) for any reason — no screenshots, no DOM dumping, no rendered-output inspection.
+- Do NOT write or run ad-hoc smoke-test scripts, `curl`/`Invoke-WebRequest` checks against a locally running server, or any manual integration testing not explicitly requested by the user.
+- If real runtime verification is genuinely needed for a specific task, STOP and ask the user first, explaining exactly what you want to run and why — do not decide unilaterally to boot processes and inspect output.
+- A finished task ends with a written summary of what changed and how the user can verify it themselves (e.g. "run `npm run dev:web` and check the map renders") — the agent does not do that verification on the user's behalf by default.
+- Formal automated tests (unit/integration test files that are part of the actual codebase and requested as a deliverable) are a separate, allowed category — this rule is about ad-hoc manual QA processes the agent runs on its own initiative, not about writing real test suites when asked.
+
+---
+
 ## 7. No Unrequested Features
 
 Do not add:
