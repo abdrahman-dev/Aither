@@ -7,7 +7,8 @@ type CacheEntry<T> = {
  * Dependency-free TTL cache (plain Map + timestamp check). This is a
  * hackathon-scope safeguard so repeated identical requests within a session
  * do not trigger duplicate FortyGuard/ORS calls — not a persistence layer.
- * Phase 2+ keys entries by request signature and wires this into endpoints.
+ * requestCache.ts derives deterministic per-request keys (with canonical
+ * defaults applied) and wires this into the endpoints.
  */
 export class TtlCache<T> {
   private readonly store = new Map<string, CacheEntry<T>>();

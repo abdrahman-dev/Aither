@@ -1,1 +1,1 @@
-export type { HeatRiskLevel, RouteRiskResult } from "@aither/shared";
+export type { HeatRiskLevel } from "@aither/shared";

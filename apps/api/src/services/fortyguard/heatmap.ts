@@ -1,0 +1,195 @@
+import { FortyGuardClient } from "./client";
+import { FortyGuardError } from "./errors";
+import {
+  HEATMAP_ANALYTIC_TYPES,
+  type CreateHeatmapOptions,
+  type HeatmapAnalyticType,
+  type HeatmapResultRaw,
+  type HeatmapStatistics,
+  type HeatmapTileFeature,
+  type NormalizedHeatmap,
+  type NormalizedHeatmapTile
+} from "./types";
+
+function readNumber(properties: Record<string, unknown>, key: string): number | undefined {
+  const value = properties[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function tileIdOf(feature: HeatmapTileFeature, index: number): number {
+  const value = feature.properties.tile_id;
+  return typeof value === "number" && Number.isFinite(value) ? value : index;
+}
+
+// Null values in response data stay "unavailable" (undefined), never 0
+// (AGENTS.md §13).
+function normalizeTile(
+  feature: HeatmapTileFeature,
+  index: number,
+  analyticType: HeatmapAnalyticType
+): NormalizedHeatmapTile {
+  const properties = feature.properties;
+  const tile: NormalizedHeatmapTile = {
+    id: feature.id ?? String(index),
+    geometry: feature.geometry,
+    tileId: tileIdOf(feature, index)
+  };
+
+  if (analyticType === "tcm") {
+    tile.averageTemperature = readNumber(properties, "average_temperature");
+    tile.minTemperature = readNumber(properties, "min_temperature");
+    tile.maxTemperature = readNumber(properties, "max_temperature");
+    tile.temperature = readNumber(properties, "temperature");
+  } else {
+    tile.value = readNumber(properties, "value");
+  }
+  return tile;
+}
+
+function normalizeStatistics(
+  raw: HeatmapResultRaw["stats_data"],
+  analyticType: HeatmapAnalyticType
+): HeatmapStatistics {
+  const stats = (raw ?? {}) as Record<string, unknown>;
+
+  if (analyticType === "tcm") {
+    const temperatureStats = (stats.temperature_stats ?? {}) as Record<string, unknown>;
+    return {
+      kind: "tcm",
+      minimum: readNumber(temperatureStats, "minimum"),
+      maximum: readNumber(temperatureStats, "maximum"),
+      mean: readNumber(temperatureStats, "mean"),
+      standardDeviation: readNumber(temperatureStats, "standard_deviation")
+    };
+  }
+
+  return {
+    kind: "analysis",
+    analyticType:
+      typeof stats.analytic_type === "string"
+        ? (stats.analytic_type as HeatmapAnalyticType)
+        : analyticType,
+    units: typeof stats.units === "string" ? stats.units : undefined,
+    nCells: readNumber(stats, "n_cells"),
+    minimum: readNumber(stats, "min"),
+    maximum: readNumber(stats, "max"),
+    mean: readNumber(stats, "mean")
+  };
+}
+
+export function normalizeHeatmap(input: {
+  activityId: string;
+  analyticType: HeatmapAnalyticType;
+  filterType: CreateHeatmapOptions["filterType"];
+  result: HeatmapResultRaw;
+}): NormalizedHeatmap {
+  const { activityId, analyticType, filterType, result } = input;
+  const stats = result.stats_data;
+
+  const units =
+    analyticType === "tcm"
+      ? null
+      : typeof (stats?.units as unknown) === "string"
+        ? (stats?.units as string)
+        : null;
+
+  const features = (result.map_data?.features ?? []).map((feature, index) =>
+    normalizeTile(feature, index, analyticType)
+  );
+
+  return {
+    activityId,
+    analyticType,
+    filterType,
+    units,
+    map: { type: "FeatureCollection", features },
+    statistics: normalizeStatistics(stats, analyticType)
+  };
+}
+
+/**
+ * POST /v1/heatmap then poll until completion. Response normalization branches
+ * on analytic_type (AGENTS.md §9.3): tcm tiles carry temperature fields, the
+ * analysis types carry properties.value interpreted via stats_data.units.
+ * Pass wait=false to receive only the activity_id.
+ */
+export async function createHeatmap(
+  client: FortyGuardClient,
+  options: CreateHeatmapOptions & { wait: true }
+): Promise<NormalizedHeatmap>;
+export async function createHeatmap(
+  client: FortyGuardClient,
+  options: CreateHeatmapOptions & { wait: false }
+): Promise<string>;
+export async function createHeatmap(
+  client: FortyGuardClient,
+  options: CreateHeatmapOptions
+): Promise<NormalizedHeatmap | string>;
+export async function createHeatmap(
+  client: FortyGuardClient,
+  options: CreateHeatmapOptions
+): Promise<NormalizedHeatmap | string> {
+  const analyticType = options.analyticType ?? "tcm";
+  const threshold = options.threshold;
+  const direction = options.direction;
+
+  if (!HEATMAP_ANALYTIC_TYPES.includes(analyticType)) {
+    throw new FortyGuardError(
+      `Unknown analytic_type ${JSON.stringify(analyticType)}. Valid options: ${HEATMAP_ANALYTIC_TYPES.join(", ")}`
+    );
+  }
+  if (analyticType === "exceedance" || analyticType === "persistence") {
+    if (typeof threshold !== "number" || !Number.isFinite(threshold)) {
+      throw new FortyGuardError(
+        `analytic_type=${analyticType} requires a threshold (°C).`
+      );
+    }
+    if (direction !== "above" && direction !== "below") {
+      throw new FortyGuardError(
+        `analytic_type=${analyticType} requires direction 'above' or 'below'.`
+      );
+    }
+  }
+
+  const dateTime: Record<string, unknown> = {
+    start_date: options.startDate,
+    filter_type: options.filterType
+  };
+  if (options.startTime !== undefined) dateTime.start_time = options.startTime;
+  if (options.endTime !== undefined) dateTime.end_time = options.endTime;
+  if (options.endDate !== undefined) dateTime.end_date = options.endDate;
+
+  const payload: Record<string, unknown> = {
+    polygon_aoi: options.polygonAoi,
+    date_time: dateTime,
+    granularity: options.granularity ?? 100,
+    analytic_type: analyticType
+  };
+  if (threshold !== undefined) payload.threshold = threshold;
+  if (direction !== undefined) payload.direction = direction;
+
+  const activityId = await client.submit("/v1/heatmap", payload);
+  console.log(
+    `Heatmap activity submitted activityId=${activityId} analyticType=${analyticType}`
+  );
+
+  if (options.wait === false) {
+    return activityId;
+  }
+
+  const result = await client.waitForActivity<HeatmapResultRaw>(activityId, {
+    pollIntervalSeconds: options.pollIntervalSeconds,
+    timeoutSeconds: options.timeoutSeconds
+  });
+
+  if (!result?.map_data || !Array.isArray(result.map_data.features)) {
+    throw new FortyGuardError("Heatmap activity completed without map_data.");
+  }
+
+  return normalizeHeatmap({
+    activityId,
+    analyticType,
+    filterType: options.filterType,
+    result
+  });
+}

@@ -11,8 +11,8 @@
     "dev": "npm run dev --workspaces --if-present",
     "dev:web": "npm run dev -w @aither/web",
     "dev:api": "npm run dev -w @aither/api",
-    "build": "npm run build --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "build": "npm run build --workspace @aither/shared --if-present && npm run build --workspace @aither/api --if-present && npm run build --workspace @aither/web --if-present",
+    "typecheck": "npm run build --workspace @aither/shared --if-present && npm run typecheck --workspace @aither/shared --if-present && npm run typecheck --workspace @aither/api --if-present && npm run typecheck --workspace @aither/web --if-present"
   },
   "engines": {
     "node": ">=18.0.0"

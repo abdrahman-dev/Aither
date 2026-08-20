@@ -4,7 +4,12 @@ import dotenv from "dotenv";
 // Single .env at the repository root, shared by all workspaces.
 dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
-const REQUIRED_VARS = ["FORTYGUARD_API_KEY", "FORTYGUARD_BASE_URL", "PORT"] as const;
+const REQUIRED_VARS = [
+  "FORTYGUARD_API_KEY",
+  "FORTYGUARD_BASE_URL",
+  "ORS_API_KEY",
+  "PORT"
+] as const;
 
 function failFast(missing: readonly string[]): never {
   console.error(
@@ -12,9 +17,7 @@ function failFast(missing: readonly string[]): never {
       "[Aither API] Missing required environment variable(s):",
       ...missing.map((name) => `  - ${name}`),
       "",
-      "Copy .env.example to .env at the repository root and fill in real values.",
-      "The FortyGuard key is not live yet: a placeholder value is enough to boot",
-      "this phase, and no FortyGuard request is made."
+      "Copy .env.example to .env at the repository root and fill in real values."
     ].join("\n")
   );
   process.exit(1);
@@ -46,5 +49,6 @@ try {
 export const config = {
   port,
   fortyguardApiKey: process.env.FORTYGUARD_API_KEY as string,
-  fortyguardBaseUrl
+  fortyguardBaseUrl,
+  orsApiKey: process.env.ORS_API_KEY as string
 };
