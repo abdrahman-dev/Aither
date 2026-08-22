@@ -13,6 +13,7 @@ const TERMINAL_FAILURE = new Set(["failed", "error"]);
 export const DEFAULT_POLL_INTERVAL_SECONDS = 3;
 export const DEFAULT_POLL_TIMEOUT_SECONDS = 600;
 export const DEFAULT_HTTP_TIMEOUT_MS = 60_000;
+export const PROGRESS_LOG_INTERVAL_MS = 30_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

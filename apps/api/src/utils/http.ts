@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { FortyGuardError } from "../services/fortyguard/errors";
+import { FortyGuardError, NoCoverageError } from "../services/fortyguard/errors";
 import { RoutingError } from "../services/routing/errors";
 
 export class HttpError extends Error {
@@ -31,6 +31,12 @@ export function handleServiceError(res: Response, error: unknown): void {
     return;
   }
   console.error(error);
+  if (error instanceof NoCoverageError) {
+    // D3: out-of-coverage is a normal user-facing state, not a crash.
+    // Surface a lightweight, non-technical message.
+    sendError(res, 502, error.message);
+    return;
+  }
   if (error instanceof FortyGuardError) {
     sendError(
       res,

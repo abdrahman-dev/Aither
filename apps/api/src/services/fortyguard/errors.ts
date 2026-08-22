@@ -33,3 +33,15 @@ export class TaskTimeoutError extends FortyGuardError {
     this.name = "TaskTimeoutError";
   }
 }
+
+/**
+ * Thrown when a FortyGuard activity completes successfully but returns
+ * no data (empty features + missing statistics) — this signals the
+ * location is outside the coverage area (e.g., non-U.S. for heatmaps).
+ */
+export class NoCoverageError extends FortyGuardError {
+  constructor() {
+    super("No heat data available for this location. Coverage is currently limited to the United States.");
+    this.name = "NoCoverageError";
+  }
+}

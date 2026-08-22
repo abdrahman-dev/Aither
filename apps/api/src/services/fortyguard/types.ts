@@ -96,8 +96,8 @@ export type HeatmapTileFeature = {
 };
 
 export type HeatmapResultRaw = {
-  map_data: { type: "FeatureCollection"; features: HeatmapTileFeature[] };
-  stats_data: Record<string, unknown> | null;
+  map_data?: { type?: string; features?: HeatmapTileFeature[] } | null;
+  stats_data?: Record<string, unknown> | null;
 };
 
 export type EnvParamsLocationRaw = {

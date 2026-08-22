@@ -1,5 +1,5 @@
 import { FortyGuardClient } from "./client";
-import { FortyGuardError } from "./errors";
+import { FortyGuardError, NoCoverageError } from "./errors";
 import {
   HEATMAP_ANALYTIC_TYPES,
   type CreateHeatmapOptions,
@@ -181,6 +181,33 @@ export async function createHeatmap(
     pollIntervalSeconds: options.pollIntervalSeconds,
     timeoutSeconds: options.timeoutSeconds
   });
+
+  // Detect FortyGuard's "no data for this area" response FIRST: out-of-coverage
+  // activities complete normally with no tile features and a stats object that
+  // may still be present carrying only marker keys (observed in production:
+  // tcm responses where stats_data is non-empty but temperature_stats holds no
+  // numeric values). So emptiness of stats_data itself is NOT the test — the
+  // absence of any usable numeric statistic is. Reusing normalizeStatistics
+  // keeps the guard's notion of "numeric data" in lockstep with what we would
+  // otherwise hand back to clients.
+  const features = Array.isArray(result?.map_data?.features)
+    ? result.map_data.features
+    : [];
+  const hasFeatures = features.length > 0;
+  const stats = normalizeStatistics(result?.stats_data, analyticType);
+  const hasNumericStats =
+    stats.kind === "tcm"
+      ? stats.minimum !== undefined ||
+        stats.maximum !== undefined ||
+        stats.mean !== undefined ||
+        stats.standardDeviation !== undefined
+      : stats.nCells !== undefined ||
+        stats.minimum !== undefined ||
+        stats.maximum !== undefined ||
+        stats.mean !== undefined;
+  if (!hasFeatures && !hasNumericStats) {
+    throw new NoCoverageError();
+  }
 
   if (!result?.map_data || !Array.isArray(result.map_data.features)) {
     throw new FortyGuardError("Heatmap activity completed without map_data.");

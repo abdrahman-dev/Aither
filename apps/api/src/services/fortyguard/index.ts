@@ -5,6 +5,7 @@ export { FortyGuardClient } from "./client";
 export {
   ActivityNotReadyError,
   FortyGuardError,
+  NoCoverageError,
   TaskFailedError,
   TaskTimeoutError
 } from "./errors";
