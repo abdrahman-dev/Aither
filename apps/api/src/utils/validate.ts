@@ -1,5 +1,4 @@
-import type { Coordinates } from "@aither/shared";
-import type { PolygonAoi } from "../services/fortyguard/types";
+import type { Coordinates, PolygonAoi } from "@aither/shared";
 
 export const EARLIEST_SUPPORTED_DATE = "2021-01-01";
 

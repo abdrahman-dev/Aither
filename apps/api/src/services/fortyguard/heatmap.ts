@@ -3,13 +3,15 @@ import { FortyGuardError, NoCoverageError } from "./errors";
 import {
   HEATMAP_ANALYTIC_TYPES,
   type CreateHeatmapOptions,
-  type HeatmapAnalyticType,
   type HeatmapResultRaw,
-  type HeatmapStatistics,
-  type HeatmapTileFeature,
-  type NormalizedHeatmap,
-  type NormalizedHeatmapTile
+  type HeatmapTileFeature
 } from "./types";
+import type {
+  HeatmapAnalyticType,
+  HeatmapResult,
+  HeatmapStatistics,
+  HeatmapTile
+} from "@aither/shared";
 
 function readNumber(properties: Record<string, unknown>, key: string): number | undefined {
   const value = properties[key];
@@ -27,11 +29,13 @@ function normalizeTile(
   feature: HeatmapTileFeature,
   index: number,
   analyticType: HeatmapAnalyticType
-): NormalizedHeatmapTile {
+): HeatmapTile {
   const properties = feature.properties;
-  const tile: NormalizedHeatmapTile = {
+  const tile: HeatmapTile = {
     id: feature.id ?? String(index),
-    geometry: feature.geometry,
+    // Raw vendor coordinates are number[][][]; the shared contract narrows
+    // them to [longitude, latitude] pairs at this boundary (AGENTS.md §52).
+    geometry: feature.geometry as HeatmapTile["geometry"],
     tileId: tileIdOf(feature, index)
   };
 
@@ -82,7 +86,7 @@ export function normalizeHeatmap(input: {
   analyticType: HeatmapAnalyticType;
   filterType: CreateHeatmapOptions["filterType"];
   result: HeatmapResultRaw;
-}): NormalizedHeatmap {
+}): HeatmapResult {
   const { activityId, analyticType, filterType, result } = input;
   const stats = result.stats_data;
 
@@ -116,7 +120,7 @@ export function normalizeHeatmap(input: {
 export async function createHeatmap(
   client: FortyGuardClient,
   options: CreateHeatmapOptions & { wait: true }
-): Promise<NormalizedHeatmap>;
+): Promise<HeatmapResult>;
 export async function createHeatmap(
   client: FortyGuardClient,
   options: CreateHeatmapOptions & { wait: false }
@@ -124,11 +128,11 @@ export async function createHeatmap(
 export async function createHeatmap(
   client: FortyGuardClient,
   options: CreateHeatmapOptions
-): Promise<NormalizedHeatmap | string>;
+): Promise<HeatmapResult | string>;
 export async function createHeatmap(
   client: FortyGuardClient,
   options: CreateHeatmapOptions
-): Promise<NormalizedHeatmap | string> {
+): Promise<HeatmapResult | string> {
   const analyticType = options.analyticType ?? "tcm";
   const threshold = options.threshold;
   const direction = options.direction;

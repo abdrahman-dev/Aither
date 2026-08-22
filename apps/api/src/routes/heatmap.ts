@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { createHeatmap, fortyGuardClient } from "../services/fortyguard";
+import type { HeatmapData } from "@aither/shared";
 import type {
-  CreateHeatmapOptions,
   ExceedanceDirection,
   HeatmapAnalyticType,
   HeatmapFilterType,
   HeatmapGranularity
-} from "../services/fortyguard";
+} from "@aither/shared";
+import { createHeatmap, fortyGuardClient } from "../services/fortyguard";
+import type { CreateHeatmapOptions } from "../services/fortyguard";
 import { HEATMAP_ANALYTIC_TYPES, HEATMAP_GRANULARITIES } from "../services/fortyguard";
 import { handleServiceError, HttpError, sendOk } from "../utils/http";
 import { createInFlightRegistry } from "../utils/inflight";
@@ -143,12 +144,16 @@ router.post("/", async (req, res) => {
     });
     const cached = heatmapCache.get(key);
     if (cached !== undefined) {
-      sendOk(res, "Heatmap generated.", { heatmap: cached });
+      sendOk<HeatmapData>(res, "Heatmap generated.", { heatmap: cached });
       return;
     }
-    const heatmap = await heatmapInflight.run(key, () => createHeatmap(fortyGuardClient, options));
+    // wait is always true here (the handler needs the full result); the spread
+    // just pins the overload so the union with the activity-id string goes away.
+    const heatmap = await heatmapInflight.run(key, () =>
+      createHeatmap(fortyGuardClient, { ...options, wait: true })
+    );
     heatmapCache.set(key, heatmap);
-    sendOk(res, "Heatmap generated.", { heatmap });
+    sendOk<HeatmapData>(res, "Heatmap generated.", { heatmap });
   } catch (error) {
     handleServiceError(res, error);
   }

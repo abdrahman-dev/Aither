@@ -1,3 +1,4 @@
+import type { HeatmapResult, RouteRiskData, RoutesData } from "@aither/shared";
 import { TtlCache } from "./cache";
 
 // In-memory only, no persistence (Phase 0.5 stateless decision). Prevents
@@ -9,9 +10,9 @@ export const HEATMAP_CACHE_TTL_MS = 5 * 60_000;
 export const ROUTE_CACHE_TTL_MS = 5 * 60_000;
 export const ROUTE_RISK_CACHE_TTL_MS = 10 * 60_000;
 
-export const heatmapCache = new TtlCache<unknown>(HEATMAP_CACHE_TTL_MS);
-export const routeCache = new TtlCache<unknown>(ROUTE_CACHE_TTL_MS);
-export const routeRiskCache = new TtlCache<unknown>(ROUTE_RISK_CACHE_TTL_MS);
+export const heatmapCache = new TtlCache<HeatmapResult>(HEATMAP_CACHE_TTL_MS);
+export const routeCache = new TtlCache<RoutesData>(ROUTE_CACHE_TTL_MS);
+export const routeRiskCache = new TtlCache<RouteRiskData>(ROUTE_RISK_CACHE_TTL_MS);
 
 // Round to 6 decimal places (~0.1 m) so near-identical requests still hit.
 export function roundCoordinate(value: number, digits = 6): number {

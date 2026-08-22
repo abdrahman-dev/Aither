@@ -1,16 +1,20 @@
-import type { HeatRiskLevel, Coordinates } from "@aither/shared";
+import type {
+  AnalyzedRoute,
+  Coordinates,
+  ExceedanceDirection,
+  HeatmapGranularity,
+  HeatmapRequest,
+  RiskAssessment,
+  RouteHeatAnalysis,
+  RouteRiskData,
+  RouteRiskRequest,
+  RouteTradeoff
+} from "@aither/shared";
 import { fortyGuardClient } from "../fortyguard";
-import {
-  createHeatmap,
-  FortyGuardError,
-  HEATMAP_GRANULARITIES,
-  type ExceedanceDirection,
-  type HeatmapDateRequest,
-  type HeatmapGranularity
-} from "../fortyguard";
-import type { NormalizedRoute, RouteSummary, LineStringGeometry } from "../routing";
+import { createHeatmap, FortyGuardError, HEATMAP_GRANULARITIES } from "../fortyguard";
+import type { NormalizedRoute } from "../routing";
 import { orsClient } from "../routing";
-import { buildSharedHull, type SharedHull } from "./hull";
+import { buildSharedHull } from "./hull";
 import {
   buildTileLookup,
   interpolateLine,
@@ -30,64 +34,6 @@ import {
 const DEFAULT_THRESHOLD_C = 30; // °C — the API's documented default
 const DEFAULT_DIRECTION = "above" as ExceedanceDirection;
 
-export type RouteHeatAnalysis = {
-  peakTemperatureC: number;
-  exceedanceHours: number;
-  persistenceHours: number;
-  validSamples: number;
-  totalSamples: number;
-};
-
-export type RiskAssessment = {
-  score: number;
-  level: HeatRiskLevel;
-  terms: {
-    normalizedPeakTemperature: number;
-    normalizedExceedance: number;
-    normalizedPersistence: number;
-  };
-};
-
-export type AnalyzedRoute = {
-  routeId: string;
-  geometry: LineStringGeometry;
-  summary: RouteSummary;
-  heat: RouteHeatAnalysis | null;
-  risk: RiskAssessment | null;
-};
-
-export type RouteTradeoff = {
-  recommendedVsFastest: {
-    extraMinutes: number;
-    extraDistanceMeters: number;
-    heatExposureReductionPercent: number | null;
-  };
-};
-
-export type CompareRouteResult = {
-  routes: AnalyzedRoute[];
-  hull: SharedHull;
-  analyses: ["tcm", "exceedance", "persistence"];
-  threshold: number;
-  direction: ExceedanceDirection;
-  timeWindow: { startTime: string | null; endTime: string | null };
-  recommendation: { routeId: string; basis: string } | null;
-  tradeoff: RouteTradeoff | null;
-  warnings: string[];
-};
-
-export type AnalyzeRouteRiskInput = {
-  origin: Coordinates;
-  destination: Coordinates;
-  date: string;
-  startTime?: string;
-  endTime?: string;
-  threshold?: number;
-  direction?: ExceedanceDirection;
-  profile?: string;
-  granularity?: HeatmapGranularity;
-};
-
 /**
  * Parse + validate the /api/route-risk request body into canonical fields.
  * Exported so the route handler can derive the cache key from the same
@@ -95,7 +41,7 @@ export type AnalyzeRouteRiskInput = {
  */
 export function parseRouteRiskInput(input: unknown): Required<
   Pick<
-    AnalyzeRouteRiskInput,
+    RouteRiskRequest,
     "origin" | "destination" | "date" | "threshold" | "direction" | "profile" | "granularity"
   >
 > & { startTime: string; endTime: string } {
@@ -190,7 +136,7 @@ function routesEquivalent(a: NormalizedRoute, b: NormalizedRoute): boolean {
  *  ORS routes → shared hull → tcm + exceedance + persistence heatmaps over one
  *  AOI (D2) → per-route sampling → D1 risk scores normalized across routes.
  */
-export async function analyzeRouteRisk(input: unknown): Promise<CompareRouteResult> {
+export async function analyzeRouteRisk(input: unknown): Promise<RouteRiskData> {
   const parsed = parseRouteRiskInput(input);
   const { origin, destination, date, startTime, endTime, threshold, direction, profile, granularity } = parsed;
 
@@ -237,7 +183,10 @@ export async function analyzeRouteRisk(input: unknown): Promise<CompareRouteResu
   // Analysis window scoped to the trip's hour range (D1). A zero-width window
   // degrades to filter_type=1 (single hour).
   const windowIsInstant = startTime === endTime;
-  const analysisWindow: HeatmapDateRequest = windowIsInstant
+  const analysisWindow: Pick<
+    HeatmapRequest,
+    "startDate" | "filterType" | "startTime" | "endTime"
+  > = windowIsInstant
     ? { startDate: date, filterType: 1, startTime }
     : { startDate: date, filterType: 2, startTime, endTime };
 

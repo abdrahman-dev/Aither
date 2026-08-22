@@ -1,7 +1,23 @@
-export type HeatmapAnalyticType = "tcm" | "time_of_measure" | "exceedance" | "persistence";
-export type HeatmapFilterType = 1 | 2 | 3 | 4;
-export type HeatmapGranularity = 60 | 80 | 100;
-export type ExceedanceDirection = "above" | "below";
+import type {
+  HeatmapAnalyticType,
+  HeatmapGranularity,
+  HeatmapRequest
+} from "@aither/shared";
+
+// API-contract types are owned by @aither/shared (the single source both the
+// backend and the frontend consume); they are re-exported here so existing
+// service-level imports keep working without reaching across package paths.
+export type {
+  ExceedanceDirection,
+  HeatmapAnalyticType,
+  HeatmapFilterType,
+  HeatmapGranularity,
+  PolygonAoi,
+  HeatmapRequest,
+  HeatmapResult,
+  HeatmapStatistics,
+  HeatmapTile
+} from "@aither/shared";
 
 export const HEATMAP_ANALYTIC_TYPES: readonly HeatmapAnalyticType[] = [
   "tcm",
@@ -34,29 +50,12 @@ export const ENV_PARAMS_ANALYSES: readonly string[] = [
   "solar_irradiance"
 ];
 
-export type PolygonAoi = {
-  type: "FeatureCollection";
-  features: Array<{
-    type: "Feature";
-    properties: Record<string, unknown>;
-    geometry: { type: "Polygon"; coordinates: number[][][] };
-  }>;
-};
+export type HeatmapDateRequest = Pick<
+  HeatmapRequest,
+  "startDate" | "filterType" | "startTime" | "endTime" | "endDate"
+>;
 
-export type HeatmapDateRequest = {
-  startDate: string;
-  filterType: HeatmapFilterType;
-  startTime?: string;
-  endTime?: string;
-  endDate?: string;
-};
-
-export type CreateHeatmapOptions = HeatmapDateRequest & {
-  polygonAoi: PolygonAoi;
-  granularity?: HeatmapGranularity;
-  analyticType?: HeatmapAnalyticType;
-  threshold?: number;
-  direction?: ExceedanceDirection;
+export type CreateHeatmapOptions = HeatmapRequest & {
   // When false, only the activity_id is returned (submission without polling).
   wait?: boolean;
   pollIntervalSeconds?: number;
@@ -127,58 +126,20 @@ export type EnvParamsResultRaw = {
   locations: EnvParamsLocationRaw[];
 };
 
-// ---- Normalized domain shapes ----
+// ---- Normalized env_params output (internal shape, not the promoted contract) ----
 
-export type NormalizedHeatmapTile = {
-  id: string;
-  geometry: { type: "Polygon"; coordinates: number[][][] };
-  tileId: number;
-  temperature?: number;
-  averageTemperature?: number;
-  minTemperature?: number;
-  maxTemperature?: number;
-  value?: number;
+export type NormalizedEnvParamSolarIrradiance = {
+  clearSky: { ghi: number; dni: number; dhi: number };
+  description?: string;
 };
 
-export type HeatmapStatistics =
-  | {
-      kind: "tcm";
-      minimum?: number;
-      maximum?: number;
-      mean?: number;
-      standardDeviation?: number;
-    }
-  | {
-      kind: "analysis";
-      analyticType: HeatmapAnalyticType;
-      units?: string;
-      nCells?: number;
-      minimum?: number;
-      maximum?: number;
-      mean?: number;
-    };
-
-export type NormalizedHeatmap = {
-  activityId: string;
-  analyticType: HeatmapAnalyticType;
-  filterType: HeatmapFilterType;
-  // "hour" for the analysis types; null for tcm.
-  units: string | null;
-  map: { type: "FeatureCollection"; features: NormalizedHeatmapTile[] };
-  statistics: HeatmapStatistics;
-};
-
-export type EnvParamLocation = {
+export type NormalizedEnvParamLocation = {
   lat: number;
   lon: number;
   elevation: number | null;
   temperature: number | null;
-  // Per-sample nulls are preserved as unavailable (AGENTS.md §13).
   parameters: Record<string, Array<number | null>>;
-  solarIrradiance: {
-    clearSky: { ghi: number; dni: number; dhi: number };
-    description?: string;
-  } | null;
+  solarIrradiance: NormalizedEnvParamSolarIrradiance | null;
 };
 
 export type NormalizedEnvParams = {
@@ -189,5 +150,5 @@ export type NormalizedEnvParams = {
     timeRange: { start: string; end: string; interval?: string; count?: number };
     timestamps: string[];
   };
-  locations: EnvParamLocation[];
+  locations: NormalizedEnvParamLocation[];
 };

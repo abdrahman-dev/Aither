@@ -1,4 +1,4 @@
-import type { NormalizedHeatmapTile } from "../fortyguard/types";
+import type { HeatmapTile } from "@aither/shared";
 
 const METERS_PER_DEGREE_LATITUDE = 111_320;
 
@@ -12,7 +12,7 @@ function metersPerDegreeLongitude(latitude: number): number {
   return METERS_PER_DEGREE_LATITUDE * Math.cos((latitude * Math.PI) / 180);
 }
 
-function ringOf(tile: NormalizedHeatmapTile): number[][] {
+function ringOf(tile: HeatmapTile): number[][] {
   const polygon = tile.geometry;
   if (!polygon || polygon.type !== "Polygon") return [];
   return polygon.coordinates[0] ?? [];
@@ -56,8 +56,8 @@ function pointInRing(lon: number, lat: number, ring: number[][]): boolean {
  * repeatedly. Tile values that are null/unavailable are kept as null (never 0).
  */
 export function buildTileLookup(
-  tiles: NormalizedHeatmapTile[],
-  pickValue: (tile: NormalizedHeatmapTile) => number | undefined
+  tiles: HeatmapTile[],
+  pickValue: (tile: HeatmapTile) => number | undefined
 ): TileValueLookup[] {
   return tiles.map((tile) => {
     const ring = ringOf(tile);

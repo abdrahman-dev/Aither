@@ -1,18 +1,10 @@
-import type { PolygonAoi } from "../fortyguard/types";
+import type { GeoJsonPosition, PolygonAoi, SharedHull } from "@aither/shared";
 import { RoutingError } from "../routing/errors";
 
 // Basic plan cap, 10 mi² (AGENTS.md §9.2, D2). Premium is 50 mi² (not reachable
 // from a fixed-size padded route box in practice without explicit overrides).
 export const BASIC_PLAN_AREA_METERS_SQUARED = 10 * 1609.344 * 1609.344;
 const METERS_PER_DEGREE_LATITUDE = 111_320;
-
-export type SharedHull = {
-  aoi: PolygonAoi;
-  areaMetersSquared: number;
-  padded: boolean;
-  clampedToCap: boolean;
-  exceedsCap: boolean;
-};
 
 export type BuildHullOptions = {
   paddingMeters?: number;
@@ -97,7 +89,7 @@ export function buildSharedHull(
   const south = minLat - padLat;
   const north = maxLat + padLat;
 
-  const ring = [
+  const ring: GeoJsonPosition[] = [
     [west, south],
     [east, south],
     [east, north],
