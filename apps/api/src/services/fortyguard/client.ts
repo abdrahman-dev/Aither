@@ -188,11 +188,17 @@ export class FortyGuardClient {
   async waitForActivity<T>(activityId: string, options: WaitForActivityOptions = {}): Promise<T> {
     const pollIntervalMs = (options.pollIntervalSeconds ?? DEFAULT_POLL_INTERVAL_SECONDS) * 1000;
     const timeoutMs = (options.timeoutSeconds ?? DEFAULT_POLL_TIMEOUT_SECONDS) * 1000;
-    const deadline = Date.now() + timeoutMs;
+    const startedAtMs = Date.now();
+    const deadline = startedAtMs + timeoutMs;
     // Transient network failures retry with exponential backoff capped at the
     // poll cadence; the overall deadline still enforces a hard stop.
     const maxTransientBackoffMs = Math.max(pollIntervalMs, 1_000);
     let transientBackoffMs = 1_000;
+    // Long-but-normal polls must stay visible in the console (a fully silent
+    // wait was mistaken for a hang during the out-of-coverage investigation),
+    // but per-tick logs were intentionally removed as spam — so log on an
+    // interval instead.
+    let lastProgressLogMs = startedAtMs;
 
     while (true) {
       let data: ActivityStatusData<T>;
@@ -239,6 +245,13 @@ export class FortyGuardClient {
         throw new TaskTimeoutError(
           `Activity ${activityId} still '${data.status}' after ${timeoutMs / 1000}s`
         );
+      }
+      const nowMs = Date.now();
+      if (nowMs - lastProgressLogMs >= PROGRESS_LOG_INTERVAL_MS) {
+        console.log(
+          `Activity ${activityId} still processing (${Math.round((nowMs - startedAtMs) / 1000)}s elapsed)`
+        );
+        lastProgressLogMs = nowMs;
       }
       await sleep(pollIntervalMs);
     }
