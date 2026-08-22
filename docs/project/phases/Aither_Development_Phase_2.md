@@ -31,7 +31,7 @@ backend-only (never exposed to the frontend). Response/error handling uses the
 ## 2. Files Added
 
 ```text
-apps/api/src/services/fortyguard/{client,heatmap,envParams,status-pattern,types,errors,index}.ts
+apps/api/src/services/fortyguard/{client,heatmap,envParams,types,errors,index}.ts
 apps/api/src/services/routing/{client,types,errors,index}.ts
 apps/api/src/services/heat/{hull,sampling,routeAnalysis}.ts
 apps/api/src/services/risk/index.ts            (D1 weights/relative normalization/classification)
