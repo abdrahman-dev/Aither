@@ -1005,6 +1005,22 @@ LOW heat exposure
 RECOMMENDED
 ```
 
+> **Updated 2026-08-24 (Phase 3.A):** The planner is implemented — differently
+> from the free-text sketch above, and deliberately so:
+>
+> -   Points are picked by clicking the map (numbered picker buttons + A/B pins),
+>     not typed as addresses; a one-shot **"Use my location"** shortcut adopts the
+>     device GPS fix as the origin.
+> -   A **transport mode selector** (Walking / Driving / Cycling) chooses the ORS
+>     profile sent to `/api/route-risk`.
+> -   The date defaults to a few days back so first-time users see real measured
+>     data (same-day TCM has processing latency); D4 caps stay enforced — past
+>     hours of today only.
+> -   Results render as numbered route cards tied to numbered map chips, with a
+>     "Measured conditions … — not a forecast" context line.
+>
+> See `docs/project/phases/Aither_Development_Phase_3_A.md` for the full record.
+
 ------------------------------------------------------------------------
 
 # 25. Visual Design Direction
@@ -1197,6 +1213,11 @@ The objective is a polished, demonstrable product.
 ------------------------------------------------------------------------
 
 # 32. Development Phases
+
+> **Updated 2026-08-24:** Actual progress is tracked in
+> `docs/project/phases/` (Phase 0, 0.5, 1.5, 2, 3.A so far), which diverges from
+> the plan numbering below — the route-comparison UI shipped as Phase 3.A on top
+> of the completed map foundation.
 
 ## Phase 1 --- Foundation
 

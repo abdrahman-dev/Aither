@@ -19,6 +19,12 @@ The project relies on a modern stack that separates the frontend from the backen
 - **State Management:** Zustand or React Context (depending on complexity)
 - **Styling:** Tailwind CSS (for rapid, clean, and modern UI development)
 
+> **Updated 2026-08-24:** As built, the mapping library is **MapLibre GL JS**
+> (v6 — the open-source fork of Mapbox GL JS; its v6 module worker needs a
+> one-time `setWorkerUrl` registration under Vite), and state management is
+> plain React state via the `useTripPlanning` hook (no Zustand). Everything
+> else in this plan matches the implementation.
+
 ### 1.2 Backend
 - **Runtime Environment:** Node.js
 - **Core Framework:** Express.js (or Fastify)
