@@ -1,3 +1,6 @@
+// Success-body view of the wire envelope defined by @aither/shared's
+// ApiEnvelope (data is T | null there; after the !ok check below it is
+// always present, so this local view narrows data to T).
 export type ApiEnvelope<T> = {
   error: boolean;
   message: string;
@@ -26,15 +29,15 @@ export class ApiClient {
     this.baseUrl = (baseUrl ?? import.meta.env.VITE_API_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
   }
 
-  get<T>(path: string): Promise<T> {
+  get<T>(path: string): Promise<ApiEnvelope<T>> {
     return this.request<T>("GET", path);
   }
 
-  post<T>(path: string, body: unknown): Promise<T> {
+  post<T>(path: string, body: unknown): Promise<ApiEnvelope<T>> {
     return this.request<T>("POST", path, body);
   }
 
-  private async request<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+  private async request<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<ApiEnvelope<T>> {
     let response: Response;
     try {
       response = await fetch(`${this.baseUrl}${path}`, {
@@ -51,7 +54,7 @@ export class ApiClient {
     }
 
     const envelope = (await response.json()) as ApiEnvelope<T>;
-    return envelope.data;
+    return envelope;
   }
 
   private async readErrorMessage(response: Response): Promise<string> {

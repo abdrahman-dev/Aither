@@ -13,3 +13,30 @@
     @apply bg-map-base font-sans text-primary antialiased;
   }
 }
+
+/* Drop-in for map pins/badges (MapLibre markers are outside React's tree, so
+   the animation lives on plain CSS classes).
+
+   IMPORTANT: never animate `transform` here. MapLibre positions marker
+   elements with an inline transform, and an animated/fill-frozen `transform`
+   overrides it — freezing every marker at the container's top-left corner.
+   The individual `translate`/`scale` properties compose with `transform`
+   instead of replacing it, so the end frame below is an identity state and
+   MapLibre's positioning stays authoritative throughout. Browsers without
+   individual-transform support simply skip the animation. */
+@keyframes aither-marker-drop {
+  from {
+    translate: 0 -10px;
+    scale: 0.4;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.aither-marker-drop {
+  animation: aither-marker-drop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
