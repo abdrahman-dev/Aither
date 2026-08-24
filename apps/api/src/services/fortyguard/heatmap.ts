@@ -1,5 +1,5 @@
 import { FortyGuardClient } from "./client";
-import { FortyGuardError, NoCoverageError } from "./errors";
+import { FortyGuardError, NO_DATA_FOR_DATE_MESSAGE, NoCoverageError } from "./errors";
 import {
   HEATMAP_ANALYTIC_TYPES,
   type CreateHeatmapOptions,
@@ -12,10 +12,21 @@ import type {
   HeatmapStatistics,
   HeatmapTile
 } from "@aither/shared";
+import { todayAsDateString } from "../../utils/validate";
 
 function readNumber(properties: Record<string, unknown>, key: string): number | undefined {
   const value = properties[key];
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : undefined;
+  }
+  // FortyGuard serializes some numbers as strings elsewhere in the contract
+  // (env_params elevation/temperature are number|string|null), so accept
+  // numeric strings defensively at this boundary too.
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
 }
 
 function tileIdOf(feature: HeatmapTileFeature, index: number): number {
@@ -210,7 +221,19 @@ export async function createHeatmap(
         stats.maximum !== undefined ||
         stats.mean !== undefined;
   if (!hasFeatures && !hasNumericStats) {
-    throw new NoCoverageError();
+    // The response body cannot distinguish "area out of coverage" from
+    // "covered area, nothing published for this date yet" — both complete with
+    // zero tiles and marker-only stats. A request dated today is almost always
+    // the latter (observed live: same-day TCM completes empty across Arizona
+    // while past dates return full data), so pick the message by request date
+    // and log the raw evidence so future occurrences diagnose themselves.
+    console.warn(
+      `[fortyguard] no-data result analyticType=${analyticType} startDate=${options.startDate} ` +
+        `featureCount=${features.length} rawStats=${JSON.stringify(result?.stats_data ?? null)}`
+    );
+    throw new NoCoverageError(
+      options.startDate === todayAsDateString() ? NO_DATA_FOR_DATE_MESSAGE : undefined
+    );
   }
 
   if (!result?.map_data || !Array.isArray(result.map_data.features)) {
