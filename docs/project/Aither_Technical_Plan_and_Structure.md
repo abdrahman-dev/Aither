@@ -24,6 +24,11 @@ The project relies on a modern stack that separates the frontend from the backen
 > one-time `setWorkerUrl` registration under Vite), and state management is
 > plain React state via the `useTripPlanning` hook (no Zustand). Everything
 > else in this plan matches the implementation.
+>
+> **Updated 2026-08-26:** The base map loads the keyless **CARTO Voyager**
+> vector style from `basemaps.cartocdn.com` (with expanded attribution per
+> CARTO's free-tier terms) instead of raw OSM raster tiles, and the app opens
+> on a landing page (`features/landing/`) before the planner/map workspace.
 
 ### 1.2 Backend
 - **Runtime Environment:** Node.js

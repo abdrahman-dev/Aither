@@ -18,8 +18,7 @@ import type {
   ErrorEvent as MapLibreErrorEvent,
   ExpressionSpecification,
   LayerSpecification,
-  MapMouseEvent,
-  StyleSpecification
+  MapMouseEvent
 } from "maplibre-gl";
 import type { Feature, FeatureCollection, LineString } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -98,26 +97,14 @@ type BaseMapProps = {
   currentLocation?: CurrentLocation | null;
 };
 
-function buildStyle(): StyleSpecification {
-  return {
-    version: 8,
-    sources: {
-      osm: {
-        type: "raster",
-        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        attribution: "&copy; OpenStreetMap contributors"
-      }
-    },
-    layers: [
-      {
-        id: "osm-base",
-        type: "raster",
-        source: "osm"
-      }
-    ]
-  };
-}
+// CARTO Voyager: a free, keyless vector basemap. The earlier Positron pass
+// overshot into "featureless" — users lost street names, water/park contrast,
+// and landmark cues needed to orient themselves. Voyager keeps the calm label
+// hierarchy while restoring subtle color-coding (green parks, blue water, warm
+// road classes), so the map reads as a place again yet stays far cleaner than
+// raw OSM. Its muted palette still lets Aither's own signals — brand
+// sky/emerald markers and the risk-tier route lines — lead the screen (§27).
+const BASEMAP_STYLE_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
 // White casing under every line keeps risk colors readable over the OSM raster;
 // the recommended route additionally gets a wider casing plus a soft brand glow.
@@ -356,7 +343,11 @@ export default function BaseMap({
       // MapLibre expects [longitude, latitude]; keep the shared Coordinates object explicit.
       center: [center.longitude, center.latitude],
       zoom,
-      style: buildStyle()
+      style: BASEMAP_STYLE_URL,
+      // CARTO's free tier requires visible attribution; the Voyager style's
+      // TileJSON carries "© CARTO, © OpenStreetMap contributors" and this
+      // control renders it expanded rather than collapsed behind an (i) button.
+      attributionControl: { compact: false }
     });
 
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");

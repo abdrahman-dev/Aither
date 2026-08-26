@@ -40,3 +40,21 @@
 .aither-marker-drop {
   animation: aither-marker-drop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+
+/* Completion pop for the planner's step indicator. Like the marker drop
+   above, this uses the individual `scale` property so it can never fight
+   an inline `transform` if this class is ever reused near the map. */
+@keyframes aither-step-pop {
+  from {
+    scale: 0.7;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.aither-step-pop {
+  animation: aither-step-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

@@ -2,7 +2,7 @@
 
 > **Urban Heat Intelligence & Heat-Aware Routing**
 
-Aither is a web application built for the **FortyGuard Hackathon '26**.
+Aither is a web application built for the **FortyGuard Global AI Hackathon**.
 It combines FortyGuard's hyperlocal temperature intelligence with route
 analysis to help users understand heat risk and choose safer, cooler
 routes through urban environments.
@@ -1214,10 +1214,13 @@ The objective is a polished, demonstrable product.
 
 # 32. Development Phases
 
-> **Updated 2026-08-24:** Actual progress is tracked in
-> `docs/project/phases/` (Phase 0, 0.5, 1.5, 2, 3.A so far), which diverges from
-> the plan numbering below — the route-comparison UI shipped as Phase 3.A on top
-> of the completed map foundation.
+> **Updated 2026-08-26:** Actual progress is tracked in
+> `docs/project/phases/` (Phase 0, 0.5, 1.5, 2, 3.A, 4 so far), which diverges
+> from the plan numbering below — the route-comparison UI shipped as Phase 3.A
+> on top of the completed map foundation, and the landing-page/layout/basemap
+> pass was recorded as Phase 4 (earlier working context called it 3.C; it is
+> unrelated to the plan's "Phase 4 — Risk Engine" below, which already shipped
+> within Phase 2).
 
 ## Phase 1 --- Foundation
 

@@ -1,7 +1,7 @@
 # AGENTS.md — Aither Agent Rules
 
 > **Project:** Aither  
-> **Purpose:** FortyGuard Hackathon '26  
+> **Purpose:** FortyGuard Global AI Hackathon  
 > **Product:** Urban Heat Intelligence + Heat-Aware Routing  
 > **Stack:** React + TypeScript + Vite + Node.js
 >

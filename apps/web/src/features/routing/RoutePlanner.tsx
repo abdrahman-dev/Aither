@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
 import type {
   Coordinates,
   RouteRiskApiResponse,
@@ -8,6 +8,8 @@ import type {
 } from "@aither/shared";
 import { api, ApiError } from "../../api/client";
 import type { LocationStatus, PickTarget, ResultContext, RouteProfile } from "./useTripPlanning";
+// Vite's asset pipeline resolves this at build time (typed via vite/client).
+import logoUrl from "../../assets/AitherLogo.png";
 
 // ORS profiles accepted by POST /api/route-risk (backend defaults foot-walking).
 const PROFILE_OPTIONS: { value: RouteProfile; label: string }[] = [
@@ -54,14 +56,106 @@ function formatCoordinates(point: Coordinates): string {
 
 type Feedback = { tone: "success" | "error"; text: string };
 
-const labelClass = "mb-1 block text-xs font-bold uppercase tracking-wide text-secondary";
+const labelClass = "mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-secondary";
 
 const neutralInputClass =
-  "w-full rounded-control border-[1.5px] border-border-subtle bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-control border-[1.5px] border-border-subtle bg-surface px-3 py-2 text-sm text-primary transition-colors hover:border-tertiary/50 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60";
 
 // §4 focus behavior: origin #38BDF8, destination #34D399; date/time inputs use
 // the documented gradient midpoint #0EA5E9 as their neutral focus color.
 const neutralFocusClass = "focus:border-brand-mid focus:ring-brand-mid/20";
+
+// Tiny presentational icons for field labels; rendered via pure SVG in
+// existing §2 palette colors — no new dependencies (AGENTS §33).
+function Icon({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`h-3.5 w-3.5 shrink-0 ${className ?? ""}`}
+    >
+      {children}
+    </svg>
+  );
+}
+
+function FieldLabel({
+  children,
+  icon,
+  id,
+  htmlFor
+}: {
+  children: string;
+  icon: ReactNode;
+  id?: string;
+  htmlFor?: string;
+}) {
+  const content = (
+    <>
+      {icon}
+      {children}
+    </>
+  );
+  return htmlFor ? (
+    <label htmlFor={htmlFor} className={labelClass} id={id}>
+      {content}
+    </label>
+  ) : (
+    <span className={labelClass} id={id}>
+      {content}
+    </span>
+  );
+}
+
+const originIcon = (
+  <Icon className="text-brand">
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </Icon>
+);
+
+const destinationIcon = (
+  <Icon className="text-brand-secondary">
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1Z" />
+    <line x1="4" x2="4" y1="22" y2="15" />
+  </Icon>
+);
+
+const routeIcon = (
+  <Icon>
+    <circle cx="6" cy="19" r="3" />
+    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+    <circle cx="18" cy="5" r="3" />
+  </Icon>
+);
+
+const calendarIcon = (
+  <Icon>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" x2="16" y1="2" y2="6" />
+    <line x1="8" x2="8" y1="2" y2="6" />
+    <line x1="3" x2="21" y1="10" y2="10" />
+  </Icon>
+);
+
+const clockIcon = (
+  <Icon>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </Icon>
+);
+
+// Thin brand-gradient accent bar shared by expanded and collapsed panel
+// states — a single ReactNode reused at mount time (only one mounts at a
+// time, so React allows the same instance).
+const panelTopBar = (
+  <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-brand-gradient" />
+);
 
 type StepState = "done" | "current" | "pending";
 
@@ -103,7 +197,7 @@ function StepStrip({
               <span
                 className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${
                   step.state === "done"
-                    ? "bg-brand-secondary text-white"
+                    ? "bg-brand-secondary text-white aither-step-pop"
                     : step.state === "current"
                       ? "bg-surface text-brand-mid ring-[1.5px] ring-inset ring-brand-mid"
                       : "bg-border-subtle text-tertiary"
@@ -121,8 +215,8 @@ function StepStrip({
               {nextState !== undefined && (
                 <span
                   aria-hidden="true"
-                  className={`h-[1.5px] flex-1 ${
-                    nextState === "pending" ? "bg-border-subtle" : "bg-brand-secondary/60"
+                  className={`h-[2px] flex-1 rounded-full ${
+                    nextState === "pending" ? "bg-border-subtle" : "bg-brand-gradient"
                   }`}
                 />
               )}
@@ -175,7 +269,7 @@ function PointPickerButton({
   onTogglePick: (target: PickTarget) => void;
 }) {
   const base =
-    "flex w-full items-center gap-3 rounded-control border-[1.5px] px-3.5 py-3 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60";
+    "flex w-full items-center gap-3 rounded-control border-[1.5px] px-3.5 py-3 text-left text-sm shadow-top-bar transition hover:border-brand-mid/40 hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60";
 
   const disc = (
     <span
@@ -302,6 +396,13 @@ export default function RoutePlanner({
       return "Aither analyzes measured conditions only — future dates are not supported.";
     }
 
+    // FROM anchors the analysis window and is required; TO falls back to the
+    // backend's whole-day default when omitted. Failing here returns before
+    // any loading state is touched, so submit can never stick.
+    if (startTimeInput === "") {
+      return "Pick a start time for the analysis.";
+    }
+
     // Today's analysis window may only cover hours that have already passed.
     if (isToday && startTimeInput !== "" && startTimeInput > nowTime) {
       return `Start time is later than it is now (${nowTime}) — only past hours of today can be analyzed.`;
@@ -345,13 +446,12 @@ export default function RoutePlanner({
         "/api/route-risk",
         request
       );
-      console.log("[route-risk] response", response);
       const data = response.data;
       if (data !== null) {
         onPublishResult(data, resultContext());
         setFeedback({
           tone: "success",
-          text: `${response.message} — routes drawn on the map; full result also logged to the console.`
+          text: `${response.message} — routes drawn on the map.`
         });
       } else {
         setFeedback({ tone: "error", text: response.message || "Empty analysis result." });
@@ -379,12 +479,19 @@ export default function RoutePlanner({
   }
 
   const panelClass =
-    "rounded-panel border-[1.5px] border-border-subtle bg-glass-soft p-5 shadow-card backdrop-blur-lg";
+    "relative overflow-hidden rounded-panel border-[1.5px] border-border-subtle bg-glass-soft p-5 shadow-card backdrop-blur-lg";
 
   if (!expanded) {
     return (
       <section className={panelClass} aria-label="Trip summary">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-tertiary">
+        {panelTopBar}
+        <div className="flex items-center gap-2.5">
+          <img src={logoUrl} alt="" className="h-8 w-8" />
+          <span className="bg-brand-gradient bg-clip-text text-base font-extrabold tracking-tight text-transparent">
+            Aither
+          </span>
+        </div>
+        <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-tertiary">
           Trip ready
         </p>
         <h1 className="mt-0.5 text-base font-extrabold leading-tight text-primary">
@@ -427,13 +534,20 @@ export default function RoutePlanner({
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-3">
       <section className={panelClass} aria-label="Plan a cooler trip">
-        <h1 className="text-lg font-extrabold leading-tight text-primary">Plan a cooler trip</h1>
+        {panelTopBar}
+        <div className="flex items-center gap-2.5">
+          <img src={logoUrl} alt="" className="h-9 w-9" />
+          <span className="bg-brand-gradient bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
+            Aither
+          </span>
+        </div>
+        <h1 className="mt-3 text-lg font-extrabold leading-tight text-primary">Plan a cooler trip</h1>
         <p className="mt-1 text-xs leading-relaxed text-secondary">
           Compare walking, driving, and cycling routes by estimated heat exposure. Every number
           comes from measured temperature data recorded for the date you pick — never a forecast.
         </p>
 
-        <div className="mt-4 rounded-control border border-border-subtle bg-surface/60 p-3">
+        <div className="mt-4 rounded-control border border-border-subtle bg-surface p-3">
           <StepStrip
             originSet={origin !== null}
             destinationSet={destination !== null}
@@ -442,18 +556,16 @@ export default function RoutePlanner({
           />
         </div>
 
-        <div className="mt-4 space-y-3">
+        <div className="mt-5 space-y-3">
           <div>
             <div className="flex items-center justify-between">
-              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-secondary">
-                Origin
-              </span>
+              <FieldLabel icon={originIcon}>Origin</FieldLabel>
               <button
                 type="button"
                 onClick={onUseCurrentLocation}
                 disabled={isSubmitting || locationStatus === "locating"}
                 aria-busy={locationStatus === "locating"}
-                className="-mt-1 mb-1 inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-bold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mb-1 inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-bold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {locationStatus === "locating" ? (
                   <>
@@ -492,7 +604,7 @@ export default function RoutePlanner({
           </div>
 
           <div>
-            <span className={labelClass}>Destination</span>
+            <FieldLabel icon={destinationIcon}>Destination</FieldLabel>
             <PointPickerButton
               target="destination"
               number="2"
@@ -512,14 +624,16 @@ export default function RoutePlanner({
             </p>
           )}
 
+          <div aria-hidden="true" className="h-px bg-border-subtle" />
+
           <div>
-            <span className={labelClass} id="transport-mode-label">
+            <FieldLabel icon={routeIcon} id="transport-mode-label">
               Transport mode
-            </span>
+            </FieldLabel>
             <div
               role="radiogroup"
               aria-labelledby="transport-mode-label"
-              className="grid grid-cols-3 gap-1 rounded-control border-[1.5px] border-border-subtle bg-surface/60 p-1"
+              className="grid grid-cols-3 gap-1 rounded-control border-[1.5px] border-border-subtle bg-surface p-1"
             >
               {PROFILE_OPTIONS.map((option) => {
                 const selected = profileInput === option.value;
@@ -534,7 +648,7 @@ export default function RoutePlanner({
                     className={`rounded-[9px] px-2 py-2 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60 ${
                       selected
                         ? "bg-brand-gradient text-white shadow-button-primary"
-                        : "text-secondary hover:bg-surface hover:text-primary"
+                        : "text-secondary hover:bg-map-base hover:text-primary"
                     }`}
                   >
                     {option.label}
@@ -544,11 +658,16 @@ export default function RoutePlanner({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-1">
+          <div aria-hidden="true" className="h-px bg-border-subtle" />
+
+          {/* "When" group: recessed well so the three inputs read as one cluster
+              (glass panel → map-base well → surface inputs = layered depth). */}
+          <div className="rounded-control bg-map-base/70 p-3">
+            <div className="grid grid-cols-3 gap-3">
             <div>
-              <label htmlFor="trip-date" className={labelClass}>
+              <FieldLabel htmlFor="trip-date" icon={calendarIcon}>
                 Date
-              </label>
+              </FieldLabel>
               <input
                 id="trip-date"
                 type="date"
@@ -561,9 +680,9 @@ export default function RoutePlanner({
               />
             </div>
             <div>
-              <label htmlFor="trip-start-time" className={labelClass}>
+              <FieldLabel htmlFor="trip-start-time" icon={clockIcon}>
                 From
-              </label>
+              </FieldLabel>
               <input
                 id="trip-start-time"
                 type="time"
@@ -575,9 +694,9 @@ export default function RoutePlanner({
               />
             </div>
             <div>
-              <label htmlFor="trip-end-time" className={labelClass}>
+              <FieldLabel htmlFor="trip-end-time" icon={clockIcon}>
                 To
-              </label>
+              </FieldLabel>
               <input
                 id="trip-end-time"
                 type="time"
@@ -589,6 +708,7 @@ export default function RoutePlanner({
                 className={`${neutralInputClass} ${neutralFocusClass}`}
               />
             </div>
+            </div>
           </div>
         </div>
 
@@ -596,7 +716,7 @@ export default function RoutePlanner({
           type="submit"
           disabled={isSubmitting}
           aria-busy={isSubmitting}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-control bg-brand-gradient px-4 py-3 text-sm font-bold text-white shadow-button-primary transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:bg-none disabled:bg-border-subtle disabled:text-tertiary disabled:shadow-none"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-control bg-brand-gradient px-4 py-3 text-sm font-bold text-white shadow-button-primary transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:bg-none disabled:bg-border-subtle disabled:text-tertiary disabled:shadow-none"
         >
           {isSubmitting ? (
             <>
