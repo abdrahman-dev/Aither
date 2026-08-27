@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import logoUrl from "../../assets/AitherLogo.png";
 
-// Tiny presentational label icons — same stroke vocabulary as the planner's
+// Tiny presentational label icons  same stroke vocabulary as the planner's
 // field labels, so the landing and the tool read as one product.
 function Icon({ children, className }: { children: ReactNode; className?: string }) {
   return (
@@ -42,7 +42,7 @@ const STEPS: { n: number; icon: ReactNode; title: string; body: string }[] = [
       </Icon>
     ),
     title: "Choose your mode",
-    body: "Walking, driving, or cycling — plus the time you plan to travel."
+    body: "Walking, driving, or cycling  plus the time you plan to travel."
   },
   {
     n: 3,
@@ -69,7 +69,7 @@ const STEPS: { n: number; icon: ReactNode; title: string; body: string }[] = [
 
 // Hero illustration echoing the app's own route-comparison rendering: two
 // routes over a schematic street grid, risk-tier colors and A/B pins matching
-// BaseMap's visual language. Qualitative chips only — no invented numbers.
+// BaseMap's visual language. Qualitative chips only  no invented numbers.
 function HeroRouteIllustration() {
   return (
     <div
@@ -222,11 +222,11 @@ export default function LandingPage({ onEnter }: { onEnter: () => void }) {
           className="block h-0.5 w-16 rounded-full bg-brand-gradient opacity-60"
         />
         <p className="mt-6 max-w-sm text-center text-xs leading-relaxed text-tertiary">
-          Every number comes from real temperature data recorded by FortyGuard — never a guess or a
+          Every number comes from real temperature data recorded by FortyGuard  never a guess or a
           forecast.
         </p>
         <p className="mt-3 text-center text-xs font-semibold text-secondary">
-          Aither — built by Abdrahman Walied Mussa for the FortyGuard Global AI Hackathon.
+          Aither  built by Abdrahman Walied Mussa for the FortyGuard Global AI Hackathon.
         </p>
       </section>
     </div>

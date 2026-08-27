@@ -8,7 +8,7 @@ import {
   setWorkerUrl
 } from "maplibre-gl";
 // MapLibre v6 does tile/GeoJSON processing in a real module worker. Bundlers
-// like Vite cannot resolve it from import.meta.url — without this one-time
+// like Vite cannot resolve it from import.meta.url  without this one-time
 // registration the style never finishes loading ("load" never fires) and
 // sources/layers silently never appear.
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
@@ -33,12 +33,12 @@ const DEFAULT_ZOOM = 11;
 const ORIGIN_COLOR = "#38BDF8";
 const DESTINATION_COLOR = "#34D399";
 
-// Standard "you are here" blue — deliberately distinct from the origin sky-blue
+// Standard "you are here" blue  deliberately distinct from the origin sky-blue
 // pin and absent from the §2 palette because this dot means the user, not trip data.
 const CURRENT_LOCATION_COLOR = "#2563EB";
 
 // UIUX_Design_Guidelines.md §2.4 tokens as solid line colors: low → Emerald 600,
-// moderate → Orange 500 (the documented toggle token — Orange 700 read as nearly
+// moderate → Orange 500 (the documented toggle token  Orange 700 read as nearly
 // the same dark warm tone as Red 600 at line width, hiding risk differences),
 // high/critical → Red 600. Routes without heat data use tertiary gray (#94A3B8).
 // Shared with the midpoint number badges so a line and its chip always match.
@@ -65,8 +65,8 @@ const ROUTE_LINE_COLOR_EXPRESSION: ExpressionSpecification = [
 ];
 
 // Alternative routes share corridors, and MapLibre paints later features on top.
-// Hottest routes go in first (bottom); cooler ones — and always the recommended
-// route — end up on top so shared segments never hide the better option.
+// Hottest routes go in first (bottom); cooler ones  and always the recommended
+// route  end up on top so shared segments never hide the better option.
 const LEVEL_DRAW_ORDER: Record<HeatRiskLevel | "unknown", number> = {
   critical: 0,
   high: 1,
@@ -98,12 +98,12 @@ type BaseMapProps = {
 };
 
 // CARTO Voyager: a free, keyless vector basemap. The earlier Positron pass
-// overshot into "featureless" — users lost street names, water/park contrast,
+// overshot into "featureless"  users lost street names, water/park contrast,
 // and landmark cues needed to orient themselves. Voyager keeps the calm label
 // hierarchy while restoring subtle color-coding (green parks, blue water, warm
 // road classes), so the map reads as a place again yet stays far cleaner than
-// raw OSM. Its muted palette still lets Aither's own signals — brand
-// sky/emerald markers and the risk-tier route lines — lead the screen (§27).
+// raw OSM. Its muted palette still lets Aither's own signals  brand
+// sky/emerald markers and the risk-tier route lines  lead the screen (§27).
 const BASEMAP_STYLE_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
 // White casing under every line keeps risk colors readable over the OSM raster;
@@ -239,7 +239,7 @@ function createCurrentLocationElement(heading: number | null): HTMLDivElement {
   // pixel transform on top of its ".maplibregl-marker { position: absolute }"
   // stylesheet rule. An inline `relative` overrides that rule, leaves the
   // element in flow at the container's top-left corner, and the transform then
-  // displaces it from there — the marker lands far from its real coordinates.
+  // displaces it from there  the marker lands far from its real coordinates.
   root.style.position = "absolute";
   root.style.width = "22px";
   root.style.height = "22px";
@@ -282,7 +282,7 @@ function createCurrentLocationElement(heading: number | null): HTMLDivElement {
   return root;
 }
 
-// Surface MapLibre problems loudly — silent map failures are unacceptable for
+// Surface MapLibre problems loudly  silent map failures are unacceptable for
 // a route-comparison product.
 function logMapError(event: MapLibreErrorEvent): void {
   console.error("[aither-map] MapLibre error:", event.error ?? "unknown");
@@ -523,7 +523,7 @@ export default function BaseMap({
           pickingPoint !== null ? "opacity-100" : "opacity-0"
         }`}
       >
-        Click the map to set {pickingPoint ?? "a point"} — click the highlighted button again to
+        Click the map to set {pickingPoint ?? "a point"}  click the highlighted button again to
         cancel
       </div>
     </div>

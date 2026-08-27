@@ -24,7 +24,7 @@ export type ResultContext = {
 /**
  * Shared trip-planning state owned by App and consumed by BaseMap (map clicks,
  * markers, route rendering) and RoutePlanner (picker buttons, submit).
- * Kept as plain React state — no store library for one feature slice.
+ * Kept as plain React state  no store library for one feature slice.
  */
 export function useTripPlanning() {
   const [origin, setOrigin] = useState<Coordinates | null>(null);

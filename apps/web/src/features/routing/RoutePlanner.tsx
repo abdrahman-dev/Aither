@@ -43,7 +43,7 @@ function defaultDateInput(): string {
   return toDateInputValue(fallback);
 }
 
-// D4 (Phase_0_5 §4): past hours of today only — no future dates or times.
+// D4 (Phase_0_5 §4): past hours of today only  no future dates or times.
 function toTimeInputValue(date: Date): string {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
@@ -66,7 +66,7 @@ const neutralInputClass =
 const neutralFocusClass = "focus:border-brand-mid focus:ring-brand-mid/20";
 
 // Tiny presentational icons for field labels; rendered via pure SVG in
-// existing §2 palette colors — no new dependencies (AGENTS §33).
+// existing §2 palette colors  no new dependencies (AGENTS §33).
 function Icon({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <svg
@@ -151,7 +151,7 @@ const clockIcon = (
 );
 
 // Thin brand-gradient accent bar shared by expanded and collapsed panel
-// states — a single ReactNode reused at mount time (only one mounts at a
+// states  a single ReactNode reused at mount time (only one mounts at a
 // time, so React allows the same instance).
 const panelTopBar = (
   <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-brand-gradient" />
@@ -338,7 +338,7 @@ type RoutePlannerProps = {
   onTogglePick: (target: PickTarget) => void;
   /** Hands a successful comparison payload up so the map and results render it. */
   onPublishResult: (result: RouteRiskData, context: ResultContext) => void;
-  /** A published comparison exists — collapse into a compact summary until edited. */
+  /** A published comparison exists  collapse into a compact summary until edited. */
   hasResult: boolean;
   /** One-shot device location request; success sets the origin + blue dot. */
   onUseCurrentLocation: () => void;
@@ -370,7 +370,7 @@ export default function RoutePlanner({
   }, [hasResult]);
 
   // Recomputed on render so the D4 caps track the current moment while the
-  // user is filling in the form (no timers — good enough for picker bounds).
+  // user is filling in the form (no timers  good enough for picker bounds).
   const todayDate = toDateInputValue(new Date());
   const nowTime = toTimeInputValue(new Date());
   const isToday = dateInput === todayDate;
@@ -393,7 +393,7 @@ export default function RoutePlanner({
       return `Date cannot be before ${DATE_FLOOR}.`;
     }
     if (dateInput > todayDate) {
-      return "Aither analyzes measured conditions only — future dates are not supported.";
+      return "Aither analyzes measured conditions only  future dates are not supported.";
     }
 
     // FROM anchors the analysis window and is required; TO falls back to the
@@ -405,10 +405,10 @@ export default function RoutePlanner({
 
     // Today's analysis window may only cover hours that have already passed.
     if (isToday && startTimeInput !== "" && startTimeInput > nowTime) {
-      return `Start time is later than it is now (${nowTime}) — only past hours of today can be analyzed.`;
+      return `Start time is later than it is now (${nowTime})  only past hours of today can be analyzed.`;
     }
     if (isToday && endTimeInput !== "" && endTimeInput > nowTime) {
-      return `End time is later than it is now (${nowTime}) — only past hours of today can be analyzed.`;
+      return `End time is later than it is now (${nowTime})  only past hours of today can be analyzed.`;
     }
     if (startTimeInput !== "" && endTimeInput !== "" && endTimeInput <= startTimeInput) {
       return "End time must be after start time.";
@@ -451,7 +451,7 @@ export default function RoutePlanner({
         onPublishResult(data, resultContext());
         setFeedback({
           tone: "success",
-          text: `${response.message} — routes drawn on the map.`
+          text: `${response.message}  routes drawn on the map.`
         });
       } else {
         setFeedback({ tone: "error", text: response.message || "Empty analysis result." });
@@ -495,7 +495,7 @@ export default function RoutePlanner({
           Trip ready
         </p>
         <h1 className="mt-0.5 text-base font-extrabold leading-tight text-primary">
-          Routes compared — see the map
+          Routes compared  see the map
         </h1>
         <div className="mt-3 space-y-1.5 text-sm">
           <p className="flex items-center gap-2">
@@ -544,7 +544,7 @@ export default function RoutePlanner({
         <h1 className="mt-3 text-lg font-extrabold leading-tight text-primary">Plan a cooler trip</h1>
         <p className="mt-1 text-xs leading-relaxed text-secondary">
           Compare walking, driving, and cycling routes by estimated heat exposure. Every number
-          comes from measured temperature data recorded for the date you pick — never a forecast.
+          comes from measured temperature data recorded for the date you pick  never a forecast.
         </p>
 
         <div className="mt-4 rounded-control border border-border-subtle bg-surface p-3">
@@ -592,13 +592,13 @@ export default function RoutePlanner({
             />
             {locationStatus === "denied" && (
               <p role="alert" className="mt-1.5 px-1 text-xs font-semibold leading-relaxed text-risk-high-text">
-                Location permission was denied — allow it in your browser settings, or pick the
+                Location permission was denied  allow it in your browser settings, or pick the
                 origin on the map.
               </p>
             )}
             {locationStatus === "unavailable" && (
               <p role="alert" className="mt-1.5 px-1 text-xs font-semibold leading-relaxed text-risk-high-text">
-                Couldn&apos;t get your location — try again, or pick the origin on the map.
+                Couldn&apos;t get your location  try again, or pick the origin on the map.
               </p>
             )}
           </div>

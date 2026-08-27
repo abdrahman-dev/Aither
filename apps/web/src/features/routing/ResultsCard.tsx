@@ -66,7 +66,7 @@ export default function ResultsCard({ result, onDismiss, context = null }: Resul
           {context && (
             <p className="mt-1 text-[11px] leading-relaxed text-tertiary">
               Measured conditions for {context.date} · {context.windowLabel} ·{" "}
-              {context.modeLabel.toLowerCase()} — not a forecast.
+              {context.modeLabel.toLowerCase()}  not a forecast.
             </p>
           )}
         </div>
@@ -83,7 +83,7 @@ export default function ResultsCard({ result, onDismiss, context = null }: Resul
       {result.recommendation && recommendedIndex >= 0 && (
         <div className="mt-4 rounded-control border border-risk-low-text/25 bg-success-highlight p-3.5">
           <span className="inline-block rounded-pill bg-brand-gradient px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-button-primary">
-            ★ Recommended — Route {recommendedIndex + 1}
+            ★ Recommended  Route {recommendedIndex + 1}
           </span>
           <p className="mt-2 text-sm font-extrabold leading-snug text-primary">
             {result.recommendation.basis}
