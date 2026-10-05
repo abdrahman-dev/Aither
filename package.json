@@ -12,6 +12,7 @@
     "dev:web": "npm run dev -w @aither/web",
     "dev:api": "npm run dev -w @aither/api",
     "build": "npm run build --workspace @aither/shared --if-present && npm run build --workspace @aither/api --if-present && npm run build --workspace @aither/web --if-present",
+    "postinstall": "npm run build --workspace @aither/shared",
     "typecheck": "npm run build --workspace @aither/shared --if-present && npm run typecheck --workspace @aither/shared --if-present && npm run typecheck --workspace @aither/api --if-present && npm run typecheck --workspace @aither/web --if-present"
   },
   "engines": {
