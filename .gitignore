@@ -6,10 +6,12 @@ dist/
 build/
 *.tsbuildinfo
 
-# Environment variables — never commit real keys
+# Environment variables — never commit real keys.
+# The broad `.env*` rule matters: without it, variants like `.env.production`
+# or `.env.staging` are NOT matched and can be committed by accident.
 .env
-.env.local
-.env.*.local
+.env*
+!.env.example
 
 # Logs
 logs/
@@ -21,6 +23,14 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Deployment
+.vercel/
+
+# Tooling caches
+.cache/
+.eslintcache
+*.local
 
 # Coverage
 coverage/
