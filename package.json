@@ -3,6 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "description": "Urban Heat Intelligence & Heat-Aware Routing",
+  "license": "MIT",
+  "author": "Abdrahman Walied Mussa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdrahman-dev/Aither.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abdrahman-dev/Aither/issues"
+  },
+  "homepage": "https://github.com/abdrahman-dev/Aither#readme",
+  "keywords": [
+    "urban-heat",
+    "heat-exposure",
+    "heat-aware-routing",
+    "climate-intelligence",
+    "fortyguard",
+    "maplibre",
+    "express",
+    "react",
+    "typescript"
+  ],
   "workspaces": [
     "apps/*",
     "packages/*"
